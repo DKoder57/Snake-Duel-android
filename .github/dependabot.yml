@@ -1,0 +1,71 @@
+version: 2
+
+updates:
+  # Ajuste (stack não-Node): este bloco só se aplica a projetos com
+  # package.json (GreenKeeper, WebViolin, Jome Cargus). Pra um projeto
+  # sem npm (ex: Snake Duel em Unity/C#), remova este bloco por completo -
+  # o bloco "github-actions" abaixo continua valendo pra qualquer projeto,
+  # independente da linguagem.
+  - package-ecosystem: "npm"
+    directory: "/"
+    # Ajuste (monorepo, alternativa mais genérica que duplicar o bloco):
+    # troque a linha acima por "directories" (plural, com glob) se houver
+    # mais de um package.json, ex: Jome Cargus com /apps/*:
+    #   directories:
+    #     - "/apps/*"
+    # Isso pega automaticamente qualquer pasta nova em /apps sem precisar
+    # editar este arquivo de novo.
+    schedule:
+      interval: "weekly"
+    # Ajuste: quantos PRs de dependência o Dependabot pode manter abertos
+    # ao mesmo tempo antes de parar de abrir novos
+    open-pull-requests-limit: 10
+
+    # Modelo otimizado: agrupa minor+patch numa única PR em vez de uma PR
+    # por dependência. Major não entra no grupo de propósito - fica numa
+    # PR separada, porque major costuma quebrar API e merece revisão isolada.
+    groups:
+      npm-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+
+    # Modelo otimizado: o Dependabot já aplica cooldown padrão de 3 dias
+    # desde jul/2026 (não sugere versão recém-lançada de cara). Aqui fica
+    # explícito e ajustado por severidade: major espera mais (mais risco de
+    # quebrar/pacote comprometido recém-descoberto), patch quase não espera.
+    cooldown:
+      default-days: 3
+      semver-major-days: 7
+      semver-minor-days: 3
+      semver-patch-days: 1
+
+    # Sem "labels:" aqui de propósito - o Dependabot já cria "dependencies"
+    # + "npm" automaticamente em toda PR, sem precisar existir antes.
+    # Definir "labels:" manualmente SUBSTITUI (não soma) esse padrão, e
+    # labels customizadas só funcionam se já existirem no repositório -
+    # então o padrão automático é estritamente melhor pra um template.
+
+  # Mantém as próprias GitHub Actions atualizadas (ex: actions/checkout@v4).
+  # Aplica-se a QUALQUER projeto no GitHub, independente da stack -
+  # normalmente não precisa mexer aqui.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Ajuste (Snake Duel / projetos .NET): descomente se o projeto usar
+  # NuGet (ex: pacotes .NET via NuGetForUnity). Unity por padrão gerencia
+  # pacotes via UPM, que o Dependabot não suporta - isso só serve se
+  # existir de fato um manifesto NuGet no projeto.
+  # - package-ecosystem: "nuget"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "weekly"

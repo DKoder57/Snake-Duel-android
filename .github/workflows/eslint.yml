@@ -1,0 +1,40 @@
+name: ESLint
+
+# Ajuste (stack não-Node): este workflow só se aplica a projetos com
+# package.json (GreenKeeper, WebViolin, Jome Cargus). Pra um projeto fora
+# do ecossistema npm (ex: Snake Duel em Unity/C#), delete este arquivo -
+# use o linter/analisador nativo da stack em vez de adaptar este.
+
+on:
+  pull_request:
+    # Ajuste: nome da branch principal do projeto (main / master / develop)
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Ajuste: versão do Node usada no projeto
+          node-version: '20'
+          cache: 'npm'
+
+      # Ajuste (monorepo): se o package.json não estiver na raiz (ex: Jome
+      # Cargus), adicione em cada step abaixo:
+      #   working-directory: ./apps/nome-do-pacote
+      - name: Instalar dependências
+        run: npm ci
+
+      # Ajuste: o script "lint" deve existir no package.json do projeto
+      # (ex: "lint": "eslint ."). Troque `npm run lint` por
+      # `yarn lint` / `pnpm lint` se usar outro gerenciador.
+      - name: Rodar lint
+        run: npm run lint

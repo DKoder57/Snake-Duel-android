@@ -1,0 +1,51 @@
+name: Security Audit
+
+# Ajuste (stack não-Node): este workflow audita dependências via `npm
+# audit`, então só serve pra projetos com package-lock.json (GreenKeeper,
+# WebViolin, Jome Cargus). Pra Snake Duel (Unity/C#), delete este arquivo -
+# não existe equivalente direto de "npm audit" pra pacotes UPM; o
+# Dependabot (ver dependabot.yml) já cobre a parte de dependências
+# desatualizadas caso o projeto use NuGet.
+
+on:
+  schedule:
+    # Ajuste: horário/frequência da auditoria automática.
+    # Exemplo atual: toda segunda às 09:00 (Brasília, UTC-3 -> 12:00 UTC)
+    - cron: '0 12 * * 1'
+  workflow_dispatch: {}
+  pull_request:
+    # Ajuste: nome da branch principal do projeto (main / master / develop)
+    branches: [main]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Ajuste: versão do Node usada no projeto
+          node-version: '20'
+          # Modelo otimizado: sem cache de npm aqui de propósito - este
+          # workflow não roda `npm ci`/`npm install`, então não há nada
+          # pra essa cache acelerar (ver comentário abaixo).
+
+      # Modelo otimizado: `npm audit` lê só o package-lock.json (já vem do
+      # checkout) - não precisa de node_modules instalado pra funcionar.
+      # Testado: `npm audit` roda e detecta vulnerabilidades reais mesmo
+      # sem nenhum `npm ci`/`npm install` antes. Isso elimina o passo mais
+      # lento do workflow (baixar e instalar todas as dependências) só
+      # pra rodar uma auditoria que nem usa o node_modules.
+      #
+      # Ajuste (monorepo): se o package-lock.json não estiver na raiz (ex:
+      # Jome Cargus), adicione:
+      #   working-directory: ./apps/nome-do-pacote
+      #
+      # Ajuste: "high" é o nível mínimo de severidade reportado.
+      # Use "critical" para ser menos rígido, ou "moderate" para ser mais.
+      - name: Auditoria de dependências (nível high)
+        run: npm audit --audit-level=high
