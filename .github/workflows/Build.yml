@@ -1,0 +1,49 @@
+name: Build Android
+
+# Substitui o antigo typescript-check.yml (deletado - não se aplica a
+# Unity/C#). Mantém o badge "build" do README apontando para um workflow
+# real: builda o projeto para Android usando game-ci/unity-builder.
+#
+# Requer 3 secrets no repositório (Settings > Secrets and variables >
+# Actions): UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD.
+# Com licença Unity Personal, a primeira ativação (obter o UNITY_LICENSE)
+# exige um passo manual único - ver documentação do game-ci/unity-builder
+# ("Activation" na doc oficial) antes de rodar este workflow pela primeira
+# vez.
+
+on:
+  pull_request:
+    # Ajuste: nome da branch principal do projeto (main / master / develop)
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      # Modelo otimizado: cache da pasta Library evita reimportar todos os
+      # assets do zero a cada run - só a primeira execução é lenta.
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-android-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-android-
+
+      - name: Build Android
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: Android
