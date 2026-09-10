@@ -1,17 +1,10 @@
-<!--
-  Ajuste: troque NOME-DO-REPO, [Nome do Projeto], a tagline e a tabela de
-  Tecnologias pros dados reais do projeto. Apague os comentários
-  <!-- Ajuste --> depois. Pra trocar badges: https://shields.io
--->
+# Snake Duel: Solo
 
-# [Nome do Projeto]
+**Snake competitivo em grid toroidal contra uma IA com pathfinding A* real, feito para Android — sem nenhuma dependência de rede.**
 
-**Uma frase dizendo o que o projeto FAZ, não só o que ele é.**
-Ex: "API que sincroniza estoque entre loja física e e-commerce em tempo real."
-
-[![Build](https://img.shields.io/github/actions/workflow/status/DKoder57/NOME-DO-REPO/typescript-check.yml?label=build)](../../actions)
-[![License](https://img.shields.io/github/license/DKoder57/NOME-DO-REPO)](LICENSE)
-[![Last Commit](https://img.shields.io/github/last-commit/DKoder57/NOME-DO-REPO)](../../commits/main)
+[![Build](https://img.shields.io/github/actions/workflow/status/DKoder57/snake-duel-solo/build.yml?label=build)](../../actions)
+[![License](https://img.shields.io/github/license/DKoder57/snake-duel-solo)](LICENSE)
+[![Last Commit](https://img.shields.io/github/last-commit/DKoder57/snake-duel-solo)](../../commits/main)
 
 ## 📑 Sumário
 
@@ -26,59 +19,56 @@ Ex: "API que sincroniza estoque entre loja física e e-commerce em tempo real."
 
 ## 📖 Sobre
 
-<!-- Ajuste: 2-4 frases. Qual problema resolve, pra quem, e por que existe. -->
+Fork solo do [Snake Duel](https://github.com/DKoder57/Snake-Duel) original, adaptado para uma partida single-player contra IA e publicação na Google Play. Existe pra ganhar experiência real de primeiro lançamento — o projeto original continua como versão canônica (multiplayer host-and-join por IP), e ideias validadas aqui podem voltar pra lá depois de testadas nesta versão mais enxuta.
 
-Documentação técnica completa (arquitetura, fluxo de dados, decisões) vive em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) e [`docs/DECISIONS.md`](docs/DECISIONS.md) — aqui fica só o essencial pra começar.
+Documentação técnica completa (arquitetura, avaliação de design, decisões) vive em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) e [`docs/DESIGN_REVIEW.md`](docs/DESIGN_REVIEW.md) — aqui fica só o essencial pra começar.
 
 ## ✨ Features
 
-<!-- Ajuste: liste as funcionalidades reais entregues -->
-
-- [x] Feature principal 1
-- [x] Feature principal 2
-- [ ] Feature planejada (ver [Roadmap](#-roadmap))
+- [x] Modo Solo contra IA (herdado do Modo 1 do projeto original: grid toroidal, itens, buff/debuff)
+- [x] Pathfinding A* real para a IA
+- [ ] Fallback do A* para grid sem caminho válido
+- [ ] Controles touch (swipe + D-pad virtual)
+- [ ] Níveis de dificuldade de IA com persona
+- [ ] Modo Sobrevivência Infinita
+- [ ] Build Android publicável (ver [Roadmap](#-roadmap))
 
 ## 🛠️ Tecnologias
 
-<!-- Ajuste: tabela com a stack real do projeto -->
-
 | Camada           | Tecnologia |
 |------------------|------------|
-| Frontend         |            |
-| Backend          |            |
-| Banco de dados   |            |
-| Infra / Deploy   |            |
+| Engine           | Unity (C#) |
+| Plataforma       | Android (AAB, target API 36) |
+| Persistência     | Armazenamento local (sem backend) |
+| Infra / Deploy   | Google Play Console |
 | CI/CD            | GitHub Actions ([workflows](.github/workflows)) |
 
 ## ▶️ Como rodar
 
 ```bash
 # Clonar
-git clone https://github.com/DKoder57/NOME-DO-REPO.git
-cd NOME-DO-REPO
-
-# Instalar dependências
-npm install
-
-# Rodar em desenvolvimento
-npm run dev
+git clone https://github.com/DKoder57/snake-duel-solo.git
+cd snake-duel-solo
 ```
 
-<!-- Ajuste: troque pelos comandos reais (build, test, variáveis de ambiente, etc) -->
+Abra a pasta do projeto no Unity Hub (versão do Editor definida em `ProjectSettings/ProjectVersion.txt`), aguarde a importação dos assets e rode a cena principal em `Assets/Scenes`.
+
+Para gerar o build Android: `File > Build Settings > Android > Switch Platform`, depois `Build` (ou `Build App Bundle` para gerar o `.aab` de publicação).
 
 ## 📂 Estrutura do projeto
 
 ```text
 .
-├── .github/          # CI (GitHub Actions) e Dependabot
-├── docs/             # Arquitetura, roadmap e decisões técnicas
-├── issues.csv        # Backlog inicial, importado como GitHub Issues
-└── src/               # Código-fonte
+├── .github/          # CI (GitHub Actions)
+├── Assets/           # Código-fonte, cenas e assets do Unity
+├── ProjectSettings/  # Configurações do projeto Unity
+├── docs/             # Arquitetura, roadmap e avaliação de design
+└── issues.csv        # Backlog inicial, importado como GitHub Issues
 ```
 
 ## 🗺️ Roadmap
 
-Planejamento macro por fases em [`docs/ROADMAP.md`](docs/ROADMAP.md). O detalhamento de cada item vira Issue no GitHub.
+Planejamento macro por fases (F1–F7) em [`issues.csv`](issues.csv), do fork do Core até a publicação em produção. O detalhamento de cada item vira Issue no GitHub.
 
 ## 🤝 Contribuindo
 
