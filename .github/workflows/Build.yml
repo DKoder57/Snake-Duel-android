@@ -1,8 +1,9 @@
 name: Build Android
 
-# Substitui o antigo typescript-check.yml (deletado - não se aplica a
-# Unity/C#). Mantém o badge "build" do README apontando para um workflow
-# real: builda o projeto para Android usando game-ci/unity-builder.
+# Badge "build" do README. Dois jobs:
+# - build: gera o AAB via game-ci/unity-builder (Android real).
+# - code-check: roda os Microsoft.Unity.Analyzers (Roslyn) sobre o
+#   projeto e falha o PR se algum warning de analyzer aparecer.
 #
 # Requer 3 secrets no repositório (Settings > Secrets and variables >
 # Actions): UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD.
@@ -47,3 +48,64 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: Android
+
+  code-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-editor-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-editor-
+
+      # Ajuste (pré-requisito, só precisa fazer uma vez): adicione
+      # "com.unity.ide.rider" ao Packages/manifest.json do projeto. O
+      # método abaixo só existe se esse pacote estiver instalado - não
+      # precisa usar Rider como editor de verdade, só ter o pacote.
+      # UnityEditor.SyncVS.SyncSolution (o método antigo, sem depender do
+      # pacote Rider) parou de gerar os arquivos corretamente a partir do
+      # Unity 2021.3.1f1, por isso o caminho abaixo é o confiável hoje.
+      - name: Gerar .sln/.csproj (sem build de player)
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: StandaloneLinux64
+          buildMethod: Packages.Rider.Editor.RiderScriptEditor.SyncSolution
+
+      - name: Configurar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # Injeta o Microsoft.Unity.Analyzers em todos os .csproj gerados,
+      # sem precisar editar cada um manualmente. PrivateAssets="all" evita
+      # que o pacote vaze como dependência pública do projeto.
+      # Ajuste: cheque a versão mais recente em
+      # https://www.nuget.org/packages/Microsoft.Unity.Analyzers antes de
+      # travar isso por muito tempo sem atualizar.
+      - name: Injetar Microsoft.Unity.Analyzers
+        run: |
+          cat > Directory.Build.props << 'EOF'
+          <Project>
+            <ItemGroup>
+              <PackageReference Include="Microsoft.Unity.Analyzers" Version="1.27.0" PrivateAssets="all" />
+            </ItemGroup>
+          </Project>
+          EOF
+
+      # -warnaserror faz o job falhar se qualquer analyzer (UNT/USP) disparar.
+      # Ajuste: se algum aviso específico for falso-positivo conhecido, é
+      # melhor suprimir via .editorconfig do que remover -warnaserror geral.
+      - name: Checar código com Microsoft.Unity.Analyzers
+        run: dotnet build *.sln -warnaserror
