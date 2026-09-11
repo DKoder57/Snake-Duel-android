@@ -33,7 +33,7 @@ jobs:
       # Modelo otimizado: cache da pasta Library evita reimportar todos os
       # assets do zero a cada run - só a primeira execução é lenta.
       - name: Cache Library
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: Library
           key: Library-android-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
@@ -59,7 +59,7 @@ jobs:
           lfs: true
 
       - name: Cache Library
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: Library
           key: Library-editor-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
